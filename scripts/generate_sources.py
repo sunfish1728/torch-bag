@@ -87,6 +87,7 @@ import net.minecraft.world.item.ItemStack;
 
 public final class BagData {
     public static final int DEFAULT_RADIUS = 16;
+    public static final int DENSITY_LOW = 0, DENSITY_MEDIUM = 1, DENSITY_HIGH = 2;
     public static NonNullList<ItemStack> load(ItemStack bag, int size) {
         NonNullList<ItemStack> items = NonNullList.withSize(size, ItemStack.EMPTY);
         if (bag.hasTag()) ContainerHelper.loadAllItems(bag.getTag().getCompound("TorchBag"), items);
@@ -107,7 +108,15 @@ public final class BagData {
     public static void setRadius(ItemStack bag, int radius) {
         if (validRadius(radius)) bag.getOrCreateTag().putInt("TorchBagRadius", radius);
     }
+    public static int density(ItemStack bag) {
+        int value = bag.hasTag() ? bag.getTag().getInt("TorchBagDensity") : DENSITY_LOW;
+        return validDensity(value) ? value : DENSITY_LOW;
+    }
+    public static void setDensity(ItemStack bag, int density) {
+        if (validDensity(density)) bag.getOrCreateTag().putInt("TorchBagDensity", density);
+    }
     private static boolean validRadius(int value) { return value == 8 || value == 16 || value == 32 || value == 64; }
+    private static boolean validDensity(int value) { return value >= DENSITY_LOW && value <= DENSITY_HIGH; }
 }
 ''', 'forge-1.20.1')
 
@@ -122,6 +131,7 @@ import net.minecraft.world.item.component.ItemContainerContents;
 
 public final class BagData {
     public static final int DEFAULT_RADIUS = 16;
+    public static final int DENSITY_LOW = 0, DENSITY_MEDIUM = 1, DENSITY_HIGH = 2;
     public static NonNullList<ItemStack> load(ItemStack bag, int size) {
         NonNullList<ItemStack> items = NonNullList.withSize(size, ItemStack.EMPTY);
         bag.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(items);
@@ -141,7 +151,18 @@ public final class BagData {
         tag.putInt("TorchBagRadius", radius);
         bag.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
     }
+    public static int density(ItemStack bag) {
+        int value = bag.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getInt("TorchBagDensity");
+        return validDensity(value) ? value : DENSITY_LOW;
+    }
+    public static void setDensity(ItemStack bag, int density) {
+        if (!validDensity(density)) return;
+        CompoundTag tag = bag.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        tag.putInt("TorchBagDensity", density);
+        bag.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
     private static boolean validRadius(int value) { return value == 8 || value == 16 || value == 32 || value == 64; }
+    private static boolean validDensity(int value) { return value >= DENSITY_LOW && value <= DENSITY_HIGH; }
 }
 ''', 'neoforge-1.21.1')
 
@@ -187,8 +208,10 @@ public final class BagGameTests {
         inv.removeItem(0, 1);
         h.assertTrue(new BagInventory(bag).count() == 3455 && bag.getHoverName().getString().equals("Saved name"), "Storage or name did not persist");
         h.assertTrue(BagData.radius(bag) == 16, "Wrong default radius");
+        h.assertTrue(BagData.density(bag) == BagData.DENSITY_LOW, "Wrong default light density");
         BagData.setRadius(bag, 64);
-        h.assertTrue(BagData.radius(bag.copy()) == 64, "Radius setting did not persist");
+        BagData.setDensity(bag, BagData.DENSITY_HIGH);
+        h.assertTrue(BagData.radius(bag.copy()) == 64 && BagData.density(bag.copy()) == BagData.DENSITY_HIGH, "Bag settings did not persist");
         h.succeed();
     }
     @GameTest(template = "empty")
@@ -200,6 +223,9 @@ public final class BagGameTests {
         BagMenu menu = new BagMenu(1, p.getInventory(), BagTier.LEATHER, 1, bag);
         p.containerMenu = menu;
         h.assertTrue(menu.clickMenuButton(p, 103) && BagData.radius(bag) == 64, "Radius menu setting was not saved");
+        h.assertTrue(menu.clickMenuButton(p, 201) && BagData.density(bag) == BagData.DENSITY_MEDIUM, "Density menu setting was not saved");
+        h.assertTrue(AutoPlacer.densitySpacing(BagData.DENSITY_LOW) == 13 && AutoPlacer.densitySpacing(BagData.DENSITY_MEDIUM) == 9 &&
+            AutoPlacer.densitySpacing(BagData.DENSITY_HIGH) == 8, "Density spacing ratios are wrong");
         for (int i = 0; i < 53; i++) menu.inventory.setItem(i, new ItemStack(Items.TORCH, 64));
         menu.quickMoveStack(p, menu.visibleSlots + 27);
         h.assertTrue(menu.inventory.count() == 3456 && p.getInventory().getItem(0).isEmpty(), "Shift insert missed final slot");
@@ -575,7 +601,7 @@ public final class BagMenu extends AbstractContainerMenu {
     public final BagInventory inventory;
     public final int source, rows, visibleSlots;
     private final Container contents;
-    public int page, torchCount, radius = BagData.DEFAULT_RADIUS;
+    public int page, torchCount, radius = BagData.DEFAULT_RADIUS, density = BagData.DENSITY_LOW;
     public BagMenu(int id, Inventory player, FriendlyByteBuf data) {
         this(id, player, BagTier.of(data.readVarInt()), data.readInt(), null);
     }
@@ -610,6 +636,10 @@ public final class BagMenu extends AbstractContainerMenu {
             public int get() { return inventory == null ? radius : BagData.radius(bag); }
             public void set(int value) { radius = value; }
         });
+        addDataSlot(new DataSlot() {
+            public int get() { return inventory == null ? density : BagData.density(bag); }
+            public void set(int value) { density = value; }
+        });
     }
     private void addPlayerSlot(Inventory player, int index, int x, int y) {
         final int inventoryIndex = index;
@@ -627,6 +657,9 @@ public final class BagMenu extends AbstractContainerMenu {
             int[] radii = {8, 16, 32, 64};
             radius = radii[button - 100];
             BagData.setRadius(bag, radius);
+        } else if (button >= 200 && button <= 202 && inventory != null) {
+            density = button - 200;
+            BagData.setDensity(bag, density);
         } else if (button >= 0 && button <= tier.rows - rows) page = button;
         else return false;
         broadcastChanges();
@@ -707,6 +740,7 @@ public final class TorchBagItem extends Item {
     }
     TOOLTIP {
         text.add(Component.translatable("tooltip.torch_bag.capacity", tier.slots(), BagData.radius(stack)).withStyle(ChatFormatting.GRAY));
+        text.add(Component.translatable("tooltip.torch_bag.density", Component.translatable("screen.torch_bag.density_" + BagData.density(stack))).withStyle(ChatFormatting.GRAY));
         text.add(Component.translatable("tooltip.torch_bag.usage").withStyle(ChatFormatting.GOLD));
         text.add(Component.translatable("tooltip.torch_bag.curios").withStyle(ChatFormatting.GRAY));
     }
@@ -785,7 +819,7 @@ public final class BagScreen extends AbstractContainerScreen<BagMenu> {
         super.renderLabels(g, mx, my);
     }
     private void renderSettings(GuiGraphics g, int mx, int my) {
-        int x = leftPos + 176, y = topPos + 28, w = 82, h = 112;
+        int x = leftPos + 176, y = topPos + 28, w = 82, h = 184;
         bevel(g, x, y, x + w, y + h, false);
         g.drawString(font, Component.translatable("screen.torch_bag.settings"), x + 8, y + 8, 0x404040, false);
         g.drawString(font, Component.translatable("screen.torch_bag.radius"), x + 8, y + 22, 0x404040, false);
@@ -796,6 +830,16 @@ public final class BagScreen extends AbstractContainerScreen<BagMenu> {
             bevel(g, x + 8, by, x + 74, by + 16, selected);
             int color = selected ? 0xFFFFA000 : (hover ? 0xFFFFFFA0 : 0xFFFFFFFF);
             String label = Component.translatable("screen.torch_bag.radius_value", RADII[i]).getString();
+            g.drawString(font, label, x + 41 - font.width(label) / 2, by + 4, color, true);
+        }
+        g.drawString(font, Component.translatable("screen.torch_bag.density"), x + 8, y + 109, 0x404040, false);
+        for (int i = 0; i < 3; i++) {
+            int by = y + 122 + i * 18;
+            boolean selected = menu.density == i;
+            boolean hover = inside(mx, my, x + 8, by, 66, 16);
+            bevel(g, x + 8, by, x + 74, by + 16, selected);
+            int color = selected ? 0xFFFFA000 : (hover ? 0xFFFFFFA0 : 0xFFFFFFFF);
+            String label = Component.translatable("screen.torch_bag.density_" + i).getString();
             g.drawString(font, label, x + 41 - font.width(label) / 2, by + 4, color, true);
         }
     }
@@ -823,6 +867,13 @@ public final class BagScreen extends AbstractContainerScreen<BagMenu> {
             if (inside(mx, my, leftPos + 184, topPos + 63 + i * 18, 66, 16)) {
                 if (minecraft != null && minecraft.gameMode != null)
                     minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 100 + i);
+                return true;
+            }
+        }
+        if (button == 0 && settingsOpen) for (int i = 0; i < 3; i++) {
+            if (inside(mx, my, leftPos + 184, topPos + 150 + i * 18, 66, 16)) {
+                if (minecraft != null && minecraft.gameMode != null)
+                    minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 200 + i);
                 return true;
             }
         }
@@ -889,8 +940,9 @@ public final class AutoPlacer {
         // Let an in-progress scan finish while walking; all placements recheck the current sphere.
         // Large moves and dimension changes discard old work immediately.
         int radius = BagData.radius(bag);
-        if (work == null || work.bag != bag || work.level != level || work.radius != radius || work.center.distSqr(center) > 16) {
-            work = new Work(level, center, bag, radius);
+        int density = BagData.density(bag);
+        if (work == null || work.bag != bag || work.level != level || work.radius != radius || work.density != density || work.center.distSqr(center) > 16) {
+            work = new Work(level, center, bag, radius, density);
             WORK.put(player.getUUID(), work);
         }
         if (level.getGameTime() < work.nextTime) return;
@@ -909,10 +961,17 @@ public final class AutoPlacer {
         });
     }
     static boolean darkFloor(ServerLevel level, BlockPos pos) {
+        return needsTorch(level, pos, BagData.DENSITY_LOW);
+    }
+    static boolean needsTorch(ServerLevel level, BlockPos pos, int density) {
+        int lightThreshold = density == BagData.DENSITY_HIGH ? 5 : density == BagData.DENSITY_MEDIUM ? 4 : 0;
         return level.hasChunkAt(pos) && level.hasChunkAt(pos.below()) &&
             level.getBlockState(pos).isAir() && level.getBlockState(pos.above()).isAir() &&
             level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), Direction.UP) &&
-            level.getBrightness(LightLayer.BLOCK, pos) == 0;
+            level.getBrightness(LightLayer.BLOCK, pos) <= lightThreshold;
+    }
+    static int densitySpacing(int density) {
+        return density == BagData.DENSITY_HIGH ? 8 : density == BagData.DENSITY_MEDIUM ? 9 : 13;
     }
     static BlockState placementState(ServerLevel level, BlockPos pos) {
         if (!level.hasChunkAt(pos) || !level.getBlockState(pos).isAir() || !level.getWorldBorder().isWithinBounds(pos)) return null;
@@ -929,13 +988,13 @@ public final class AutoPlacer {
         final ServerLevel level;
         final BlockPos center;
         final ItemStack bag;
-        final int radius;
+        final int radius, density;
         final List<BlockPos> offsets;
         final Map<BlockPos, Long> rejected = new HashMap<>();
         int cursor;
         long nextTime;
-        Work(ServerLevel level, BlockPos center, ItemStack bag, int radius) {
-            this.level = level; this.center = center; this.bag = bag; this.radius = radius; offsets = offsets(radius);
+        Work(ServerLevel level, BlockPos center, ItemStack bag, int radius, int density) {
+            this.level = level; this.center = center; this.bag = bag; this.radius = radius; this.density = density; offsets = offsets(radius);
         }
         void step(ServerPlayer player) {
             int budget = SCAN_BUDGET;
@@ -944,14 +1003,14 @@ public final class AutoPlacer {
             while (cursor < offsets.size() && budget-- > 0) {
                 BlockPos pos = center.offset(offsets.get(cursor++));
                 if (!level.isInWorldBounds(pos) || !level.hasChunkAt(pos) || rejected.getOrDefault(pos, 0L) > level.getGameTime()) continue;
-                if (!darkFloor(level, pos)) continue;
+                if (!needsTorch(level, pos, density)) continue;
                 // The vanilla light engine applies the world update asynchronously.
                 // Approximate only torches placed by this batch so nearby cells are
                 // not filled before vanilla light becomes visible on the next tick.
                 boolean batchLit = false;
                 for (BlockPos torch : placedThisTick) {
                     int distance = Math.abs(torch.getX() - pos.getX()) + Math.abs(torch.getY() - pos.getY()) + Math.abs(torch.getZ() - pos.getZ());
-                    if (distance <= 13) { batchLit = true; break; }
+                    if (distance <= densitySpacing(density)) { batchLit = true; break; }
                 }
                 if (batchLit) continue;
                 BlockState state = placementState(level, pos);
@@ -973,7 +1032,7 @@ public final class AutoPlacer {
             reset(player, placed > 0 ? 1 : 10);
         }
         void reset(ServerPlayer player, int delay) {
-            Work replacement = new Work(level, player.blockPosition(), bag, radius);
+            Work replacement = new Work(level, player.blockPosition(), bag, radius, density);
             rejected.entrySet().removeIf(e -> e.getValue() <= level.getGameTime());
             replacement.rejected.putAll(rejected);
             replacement.nextTime = level.getGameTime() + delay;

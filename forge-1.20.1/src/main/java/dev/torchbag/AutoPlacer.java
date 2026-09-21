@@ -36,8 +36,9 @@ public final class AutoPlacer {
         // Let an in-progress scan finish while walking; all placements recheck the current sphere.
         // Large moves and dimension changes discard old work immediately.
         int radius = BagData.radius(bag);
-        if (work == null || work.bag != bag || work.level != level || work.radius != radius || work.center.distSqr(center) > 16) {
-            work = new Work(level, center, bag, radius);
+        int density = BagData.density(bag);
+        if (work == null || work.bag != bag || work.level != level || work.radius != radius || work.density != density || work.center.distSqr(center) > 16) {
+            work = new Work(level, center, bag, radius, density);
             WORK.put(player.getUUID(), work);
         }
         if (level.getGameTime() < work.nextTime) return;
@@ -56,10 +57,17 @@ public final class AutoPlacer {
         });
     }
     static boolean darkFloor(ServerLevel level, BlockPos pos) {
+        return needsTorch(level, pos, BagData.DENSITY_LOW);
+    }
+    static boolean needsTorch(ServerLevel level, BlockPos pos, int density) {
+        int lightThreshold = density == BagData.DENSITY_HIGH ? 5 : density == BagData.DENSITY_MEDIUM ? 4 : 0;
         return level.hasChunkAt(pos) && level.hasChunkAt(pos.below()) &&
             level.getBlockState(pos).isAir() && level.getBlockState(pos.above()).isAir() &&
             level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), Direction.UP) &&
-            level.getBrightness(LightLayer.BLOCK, pos) == 0;
+            level.getBrightness(LightLayer.BLOCK, pos) <= lightThreshold;
+    }
+    static int densitySpacing(int density) {
+        return density == BagData.DENSITY_HIGH ? 8 : density == BagData.DENSITY_MEDIUM ? 9 : 13;
     }
     static BlockState placementState(ServerLevel level, BlockPos pos) {
         if (!level.hasChunkAt(pos) || !level.getBlockState(pos).isAir() || !level.getWorldBorder().isWithinBounds(pos)) return null;
@@ -76,13 +84,13 @@ public final class AutoPlacer {
         final ServerLevel level;
         final BlockPos center;
         final ItemStack bag;
-        final int radius;
+        final int radius, density;
         final List<BlockPos> offsets;
         final Map<BlockPos, Long> rejected = new HashMap<>();
         int cursor;
         long nextTime;
-        Work(ServerLevel level, BlockPos center, ItemStack bag, int radius) {
-            this.level = level; this.center = center; this.bag = bag; this.radius = radius; offsets = offsets(radius);
+        Work(ServerLevel level, BlockPos center, ItemStack bag, int radius, int density) {
+            this.level = level; this.center = center; this.bag = bag; this.radius = radius; this.density = density; offsets = offsets(radius);
         }
         void step(ServerPlayer player) {
             int budget = SCAN_BUDGET;
@@ -91,14 +99,14 @@ public final class AutoPlacer {
             while (cursor < offsets.size() && budget-- > 0) {
                 BlockPos pos = center.offset(offsets.get(cursor++));
                 if (!level.isInWorldBounds(pos) || !level.hasChunkAt(pos) || rejected.getOrDefault(pos, 0L) > level.getGameTime()) continue;
-                if (!darkFloor(level, pos)) continue;
+                if (!needsTorch(level, pos, density)) continue;
                 // The vanilla light engine applies the world update asynchronously.
                 // Approximate only torches placed by this batch so nearby cells are
                 // not filled before vanilla light becomes visible on the next tick.
                 boolean batchLit = false;
                 for (BlockPos torch : placedThisTick) {
                     int distance = Math.abs(torch.getX() - pos.getX()) + Math.abs(torch.getY() - pos.getY()) + Math.abs(torch.getZ() - pos.getZ());
-                    if (distance <= 13) { batchLit = true; break; }
+                    if (distance <= densitySpacing(density)) { batchLit = true; break; }
                 }
                 if (batchLit) continue;
                 BlockState state = placementState(level, pos);
@@ -120,7 +128,7 @@ public final class AutoPlacer {
             reset(player, placed > 0 ? 1 : 10);
         }
         void reset(ServerPlayer player, int delay) {
-            Work replacement = new Work(level, player.blockPosition(), bag, radius);
+            Work replacement = new Work(level, player.blockPosition(), bag, radius, density);
             rejected.entrySet().removeIf(e -> e.getValue() <= level.getGameTime());
             replacement.rejected.putAll(rejected);
             replacement.nextTime = level.getGameTime() + delay;

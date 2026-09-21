@@ -11,7 +11,7 @@ if DIST.exists(): shutil.rmtree(DIST)
 DIST.mkdir()
 hashes = []
 for version in ['forge-1.20.1','neoforge-1.21.1']:
-    src = ROOT / version / 'build/libs/torch_bag-0.5.2.jar'
+    src = ROOT / version / 'build/libs/torch_bag-0.6.0.jar'
     with zipfile.ZipFile(src) as jar:
         names = set(jar.namelist())
         assert 'dev/torchbag/TorchBagMod.class' in names
@@ -32,6 +32,17 @@ for version in ['forge-1.20.1','neoforge-1.21.1']:
         assert '區塊' in zh_tw['tooltip.torch_bag.bomb_radius']
         assert '区块' in zh_cn['tooltip.torch_bag.bomb_radius']
         assert 'chunks' in en_us['tooltip.torch_bag.bomb_radius']
+        for lang in [zh_tw, zh_cn, en_us]:
+            assert 'tooltip.torch_bag.density' in lang
+            assert 'screen.torch_bag.density' in lang
+            for level in range(3):
+                assert f'screen.torch_bag.density_{level}' in lang
+        assert '2倍' in zh_tw['screen.torch_bag.density_1']
+        assert '2.5倍' in zh_tw['screen.torch_bag.density_2']
+        assert '2倍' in zh_cn['screen.torch_bag.density_1']
+        assert '2.5倍' in zh_cn['screen.torch_bag.density_2']
+        assert '2x' in en_us['screen.torch_bag.density_1']
+        assert '2.5x' in en_us['screen.torch_bag.density_2']
         for key in ['bomb_progress', 'bomb_complete', 'bomb_busy', 'bomb_too_complex']:
             assert f'message.torch_bag.{key}' in zh_tw
         for bomb in ['torch_bomb_i', 'torch_bomb_ii', 'torch_bomb_iii']:
@@ -53,7 +64,7 @@ for version in ['forge-1.20.1','neoforge-1.21.1']:
             upgrade = json.loads(jar.read(f'data/torch_bag/{folder}/torch_bomb_{level}.json'))
             assert len(upgrade['ingredients']) == 2
             assert all(x['item'] == f'torch_bag:torch_bomb_{previous}' for x in upgrade['ingredients'])
-    target = DIST / f'torch_bag-0.5.2-{version}.jar'
+    target = DIST / f'torch_bag-0.6.0-{version}.jar'
     shutil.copyfile(src,target)
     hashes.append(hashlib.sha256(target.read_bytes()).hexdigest()+'  '+target.name)
     evidence = ROOT / 'verification' / version
@@ -71,7 +82,7 @@ for version in ['forge-1.20.1','neoforge-1.21.1']:
 for name in ['README.md','TESTING.md']:
     shutil.copyfile(ROOT/name,DIST/name)
 
-archive = DIST / 'torch_bag-0.5.2-source.zip'
+archive = DIST / 'torch_bag-0.6.0-source.zip'
 excluded = {'build','.gradle','run','runs','.reference','.tmp','dist','.git','artwork-python','mdk-downloads','__pycache__'}
 with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:
     for path in ROOT.rglob('*'):

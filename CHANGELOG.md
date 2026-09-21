@@ -4,6 +4,11 @@
 
 ## 繁體中文
 
+### 0.6.0
+
+- 在火把袋的齒輪設定加入低／中／高光源密度；間距分別為 13／9／8 格。
+- 密度設定會記在個別火把袋上，並更新繁中、簡中與英文介面文字。
+
 ### 0.5.2
 
 - 將火把爆彈 I／II／III 的範圍調整為 4／8／16 個區塊。
@@ -27,6 +32,11 @@
 
 ## 简体中文
 
+### 0.6.0
+
+- 在火把袋的齿轮设置中加入低／中／高光源密度；间距分别为 13／9／8 格。
+- 密度设置会保存在各个火把袋上，并更新繁中、简中和英文界面文字。
+
 ### 0.5.2
 
 - 将火把爆弹 I／II／III 的范围调整为 4／8／16 个区块。
@@ -49,6 +59,11 @@
 - 新增火把爆弹 I／II／III、合成配方和末影之眼风格贴图。
 
 ## English
+
+### 0.6.0
+
+- Added Low, Medium, and High light-density options to the Torch Bag gear settings, with 13/9/8-block spacing.
+- Density is saved per Torch Bag, with updated Traditional Chinese, Simplified Chinese, and English interface text.
 
 ### 0.5.2
 

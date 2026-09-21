@@ -2,7 +2,7 @@
 
 [繁體中文](README.md) · [简体中文](README.zh_CN.md) · [English](README.en.md)
 
-An automatic torch-placement mod for Minecraft Forge 1.20.1 and NeoForge 1.21.1. Current version: 0.5.2.
+An automatic torch-placement mod for Minecraft Forge 1.20.1 and NeoForge 1.21.1. Current version: 0.6.0.
 
 ## Installation
 

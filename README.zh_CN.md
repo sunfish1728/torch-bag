@@ -2,7 +2,7 @@
 
 [繁體中文](README.md) · [简体中文](README.zh_CN.md) · [English](README.en.md)
 
-适用于 Minecraft Forge 1.20.1 和 NeoForge 1.21.1 的自动放火把模组。当前版本：0.5.2。
+适用于 Minecraft Forge 1.20.1 和 NeoForge 1.21.1 的自动放火把模组。当前版本：0.6.0。
 
 ## 安装
 

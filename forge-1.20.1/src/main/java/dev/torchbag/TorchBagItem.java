@@ -24,6 +24,7 @@ public final class TorchBagItem extends Item {
     }
     public void appendHoverText(ItemStack stack, Level level, List<Component> text, TooltipFlag flag) {
         text.add(Component.translatable("tooltip.torch_bag.capacity", tier.slots(), BagData.radius(stack)).withStyle(ChatFormatting.GRAY));
+        text.add(Component.translatable("tooltip.torch_bag.density", Component.translatable("screen.torch_bag.density_" + BagData.density(stack))).withStyle(ChatFormatting.GRAY));
         text.add(Component.translatable("tooltip.torch_bag.usage").withStyle(ChatFormatting.GOLD));
         text.add(Component.translatable("tooltip.torch_bag.curios").withStyle(ChatFormatting.GRAY));
     }

@@ -14,7 +14,7 @@ public final class BagMenu extends AbstractContainerMenu {
     public final BagInventory inventory;
     public final int source, rows, visibleSlots;
     private final Container contents;
-    public int page, torchCount, radius = BagData.DEFAULT_RADIUS;
+    public int page, torchCount, radius = BagData.DEFAULT_RADIUS, density = BagData.DENSITY_LOW;
     public BagMenu(int id, Inventory player, FriendlyByteBuf data) {
         this(id, player, BagTier.of(data.readVarInt()), data.readInt(), null);
     }
@@ -49,6 +49,10 @@ public final class BagMenu extends AbstractContainerMenu {
             public int get() { return inventory == null ? radius : BagData.radius(bag); }
             public void set(int value) { radius = value; }
         });
+        addDataSlot(new DataSlot() {
+            public int get() { return inventory == null ? density : BagData.density(bag); }
+            public void set(int value) { density = value; }
+        });
     }
     private void addPlayerSlot(Inventory player, int index, int x, int y) {
         final int inventoryIndex = index;
@@ -66,6 +70,9 @@ public final class BagMenu extends AbstractContainerMenu {
             int[] radii = {8, 16, 32, 64};
             radius = radii[button - 100];
             BagData.setRadius(bag, radius);
+        } else if (button >= 200 && button <= 202 && inventory != null) {
+            density = button - 200;
+            BagData.setDensity(bag, density);
         } else if (button >= 0 && button <= tier.rows - rows) page = button;
         else return false;
         broadcastChanges();

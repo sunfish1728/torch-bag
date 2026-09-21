@@ -36,8 +36,10 @@ public final class BagGameTests {
         inv.removeItem(0, 1);
         h.assertTrue(new BagInventory(bag).count() == 3455 && bag.getHoverName().getString().equals("Saved name"), "Storage or name did not persist");
         h.assertTrue(BagData.radius(bag) == 16, "Wrong default radius");
+        h.assertTrue(BagData.density(bag) == BagData.DENSITY_LOW, "Wrong default light density");
         BagData.setRadius(bag, 64);
-        h.assertTrue(BagData.radius(bag.copy()) == 64, "Radius setting did not persist");
+        BagData.setDensity(bag, BagData.DENSITY_HIGH);
+        h.assertTrue(BagData.radius(bag.copy()) == 64 && BagData.density(bag.copy()) == BagData.DENSITY_HIGH, "Bag settings did not persist");
         h.succeed();
     }
     @GameTest(template = "empty")
@@ -49,6 +51,9 @@ public final class BagGameTests {
         BagMenu menu = new BagMenu(1, p.getInventory(), BagTier.LEATHER, 1, bag);
         p.containerMenu = menu;
         h.assertTrue(menu.clickMenuButton(p, 103) && BagData.radius(bag) == 64, "Radius menu setting was not saved");
+        h.assertTrue(menu.clickMenuButton(p, 201) && BagData.density(bag) == BagData.DENSITY_MEDIUM, "Density menu setting was not saved");
+        h.assertTrue(AutoPlacer.densitySpacing(BagData.DENSITY_LOW) == 13 && AutoPlacer.densitySpacing(BagData.DENSITY_MEDIUM) == 9 &&
+            AutoPlacer.densitySpacing(BagData.DENSITY_HIGH) == 8, "Density spacing ratios are wrong");
         for (int i = 0; i < 53; i++) menu.inventory.setItem(i, new ItemStack(Items.TORCH, 64));
         menu.quickMoveStack(p, menu.visibleSlots + 27);
         h.assertTrue(menu.inventory.count() == 3456 && p.getInventory().getItem(0).isEmpty(), "Shift insert missed final slot");

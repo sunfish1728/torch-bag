@@ -8,6 +8,7 @@ import net.minecraft.world.item.component.ItemContainerContents;
 
 public final class BagData {
     public static final int DEFAULT_RADIUS = 16;
+    public static final int DENSITY_LOW = 0, DENSITY_MEDIUM = 1, DENSITY_HIGH = 2;
     public static NonNullList<ItemStack> load(ItemStack bag, int size) {
         NonNullList<ItemStack> items = NonNullList.withSize(size, ItemStack.EMPTY);
         bag.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(items);
@@ -27,5 +28,16 @@ public final class BagData {
         tag.putInt("TorchBagRadius", radius);
         bag.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
     }
+    public static int density(ItemStack bag) {
+        int value = bag.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getInt("TorchBagDensity");
+        return validDensity(value) ? value : DENSITY_LOW;
+    }
+    public static void setDensity(ItemStack bag, int density) {
+        if (!validDensity(density)) return;
+        CompoundTag tag = bag.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        tag.putInt("TorchBagDensity", density);
+        bag.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
     private static boolean validRadius(int value) { return value == 8 || value == 16 || value == 32 || value == 64; }
+    private static boolean validDensity(int value) { return value >= DENSITY_LOW && value <= DENSITY_HIGH; }
 }

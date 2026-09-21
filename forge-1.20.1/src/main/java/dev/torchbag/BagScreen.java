@@ -29,7 +29,7 @@ public final class BagScreen extends AbstractContainerScreen<BagMenu> {
         super.renderLabels(g, mx, my);
     }
     private void renderSettings(GuiGraphics g, int mx, int my) {
-        int x = leftPos + 176, y = topPos + 28, w = 82, h = 112;
+        int x = leftPos + 176, y = topPos + 28, w = 82, h = 184;
         bevel(g, x, y, x + w, y + h, false);
         g.drawString(font, Component.translatable("screen.torch_bag.settings"), x + 8, y + 8, 0x404040, false);
         g.drawString(font, Component.translatable("screen.torch_bag.radius"), x + 8, y + 22, 0x404040, false);
@@ -40,6 +40,16 @@ public final class BagScreen extends AbstractContainerScreen<BagMenu> {
             bevel(g, x + 8, by, x + 74, by + 16, selected);
             int color = selected ? 0xFFFFA000 : (hover ? 0xFFFFFFA0 : 0xFFFFFFFF);
             String label = Component.translatable("screen.torch_bag.radius_value", RADII[i]).getString();
+            g.drawString(font, label, x + 41 - font.width(label) / 2, by + 4, color, true);
+        }
+        g.drawString(font, Component.translatable("screen.torch_bag.density"), x + 8, y + 109, 0x404040, false);
+        for (int i = 0; i < 3; i++) {
+            int by = y + 122 + i * 18;
+            boolean selected = menu.density == i;
+            boolean hover = inside(mx, my, x + 8, by, 66, 16);
+            bevel(g, x + 8, by, x + 74, by + 16, selected);
+            int color = selected ? 0xFFFFA000 : (hover ? 0xFFFFFFA0 : 0xFFFFFFFF);
+            String label = Component.translatable("screen.torch_bag.density_" + i).getString();
             g.drawString(font, label, x + 41 - font.width(label) / 2, by + 4, color, true);
         }
     }
@@ -67,6 +77,13 @@ public final class BagScreen extends AbstractContainerScreen<BagMenu> {
             if (inside(mx, my, leftPos + 184, topPos + 63 + i * 18, 66, 16)) {
                 if (minecraft != null && minecraft.gameMode != null)
                     minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 100 + i);
+                return true;
+            }
+        }
+        if (button == 0 && settingsOpen) for (int i = 0; i < 3; i++) {
+            if (inside(mx, my, leftPos + 184, topPos + 150 + i * 18, 66, 16)) {
+                if (minecraft != null && minecraft.gameMode != null)
+                    minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 200 + i);
                 return true;
             }
         }
