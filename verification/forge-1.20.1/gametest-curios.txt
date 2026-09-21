@@ -1,0 +1,3 @@
+[19:53:58] [Server thread/INFO] [minecraft/GameTestServer]: ========= 10 GAME TESTS COMPLETE ======================
+[19:53:58] [Server thread/INFO] [minecraft/GameTestServer]: All 10 required tests passed :)
+BUILD SUCCESSFUL in 32s

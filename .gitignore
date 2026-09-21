@@ -1,0 +1,15 @@
+.tools/mdk-downloads/
+.tools/artwork-python/
+.reference/
+**/.gradle/
+**/build/
+**/run/
+**/runs/
+**/logs/
+**/crash-reports/
+.idea/
+*.iml
+*.log
+__pycache__/
+.tmp/
+dist/

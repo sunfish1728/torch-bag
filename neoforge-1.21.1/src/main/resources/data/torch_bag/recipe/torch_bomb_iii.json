@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "torch_bag:torch_bomb_ii"
+    },
+    {
+      "item": "torch_bag:torch_bomb_ii"
+    }
+  ],
+  "result": {
+    "id": "torch_bag:torch_bomb_iii",
+    "count": 1
+  }
+}

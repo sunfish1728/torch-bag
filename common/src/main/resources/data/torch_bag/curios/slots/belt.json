@@ -1,0 +1,12 @@
+{
+  "size": 1,
+  "operation": "SET",
+  "order": 180,
+  "icon": "curios:slot/empty_belt_slot",
+  "add_cosmetic": false,
+  "use_native_gui": true,
+  "render_toggle": false,
+  "validators": [
+    "curios:tag"
+  ]
+}

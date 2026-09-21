@@ -1,0 +1,23 @@
+{
+  "item.torch_bag.leather_torch_bag": "Torch Bag",
+  "item.torch_bag.torch_bomb_i": "Torch Bomb (I)",
+  "item.torch_bag.torch_bomb_ii": "Torch Bomb (II)",
+  "item.torch_bag.torch_bomb_iii": "Torch Bomb (III)",
+  "tooltip.torch_bag.capacity": "%s slots | Radius: %s blocks",
+  "tooltip.torch_bag.usage": "Hold or equip in a Belt slot to light dark areas",
+  "tooltip.torch_bag.curios": "Right-click to open; use Open Torch Bag when equipped",
+  "screen.torch_bag.status": "%s / %s | Radius %s",
+  "screen.torch_bag.settings": "Settings",
+  "screen.torch_bag.radius": "Light radius",
+  "screen.torch_bag.radius_value": "%s blocks",
+  "key.torch_bag.open": "Open Equipped Torch Bag",
+  "key.categories.torch_bag": "Torch Bag",
+  "tooltip.torch_bag.bomb_radius": "Placement radius: %s chunks",
+  "tooltip.torch_bag.bomb_usage": "Right-click to consume and light chunks outward",
+  "message.torch_bag.bomb_started": "Torch Bomb started",
+  "message.torch_bag.bomb_busy": "Your previous Torch Bomb is still running: %s%%",
+  "message.torch_bag.bomb_server_busy": "Too many Torch Bombs are running",
+  "message.torch_bag.bomb_progress": "Torch placement progress: %s%%",
+  "message.torch_bag.bomb_complete": "Torch Bomb complete: 100%",
+  "message.torch_bag.bomb_too_complex": "The terrain is too complex, so the Torch Bomb stopped. Placed torches remain."
+}

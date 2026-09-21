@@ -1,0 +1,23 @@
+{
+  "item.torch_bag.leather_torch_bag": "火把袋",
+  "item.torch_bag.torch_bomb_i": "火把爆彈(I)",
+  "item.torch_bag.torch_bomb_ii": "火把爆彈(II)",
+  "item.torch_bag.torch_bomb_iii": "火把爆彈(III)",
+  "tooltip.torch_bag.capacity": "容量：%s 格　補光半徑：%s 格",
+  "tooltip.torch_bag.usage": "手持或裝備在腰帶欄位，自動補光",
+  "tooltip.torch_bag.curios": "右鍵開啟；已穿戴時使用「開啟火把袋」按鍵",
+  "screen.torch_bag.status": "%s / %s 支　半徑 %s 格",
+  "screen.torch_bag.settings": "設定",
+  "screen.torch_bag.radius": "補光半徑",
+  "screen.torch_bag.radius_value": "%s 格",
+  "key.torch_bag.open": "開啟已裝備的火把袋",
+  "key.categories.torch_bag": "火把袋",
+  "tooltip.torch_bag.bomb_radius": "放置半徑：%s 個區塊",
+  "tooltip.torch_bag.bomb_usage": "右鍵消耗，逐區塊向外補光",
+  "message.torch_bag.bomb_started": "火把爆彈已啟動",
+  "message.torch_bag.bomb_busy": "上一顆火把爆彈尚未完成：%s%%",
+  "message.torch_bag.bomb_server_busy": "目前同時運行的火把爆彈太多",
+  "message.torch_bag.bomb_progress": "火把放置進度：%s%%",
+  "message.torch_bag.bomb_complete": "火把爆彈完成：100%",
+  "message.torch_bag.bomb_too_complex": "地形過於複雜，爆彈已停止；已放置的火把會保留。"
+}
